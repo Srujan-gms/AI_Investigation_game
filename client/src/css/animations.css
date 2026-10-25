@@ -1,0 +1,143 @@
+/* Keyframe Animations */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+@keyframes staticNoise {
+  0%, 100% { background-position: 0 0; }
+  10% { background-position: -5% -10%; }
+  30% { background-position: 3% -15%; }
+  50% { background-position: -10% 5%; }
+  70% { background-position: 8% 12%; }
+  90% { background-position: -2% 8%; }
+}
+
+@keyframes cctvFlicker {
+  0%, 100% { opacity: 0.96; }
+  22% { opacity: 0.88; }
+  24% { opacity: 0.98; }
+  55% { opacity: 0.92; }
+  85% { opacity: 0.89; }
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(225, 29, 72, 0.2);
+    border-color: rgba(225, 29, 72, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(225, 29, 72, 0.55);
+    border-color: rgba(225, 29, 72, 0.8);
+  }
+}
+
+@keyframes stampImpact {
+  0% {
+    opacity: 0;
+    transform: scale(3.5) rotate(-18deg);
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(0.92) rotate(-8deg);
+    filter: blur(1px);
+  }
+  75% {
+    transform: scale(1.05) rotate(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-9deg);
+    filter: blur(0);
+  }
+}
+
+@keyframes chatBubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes borderRotate {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+/* Reusable Animation Classes */
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
