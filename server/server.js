@@ -70,3 +70,5 @@ server.listen(PORT, () => {
   console.log(`📁  Serving Web Client from: ${ROOT_DIR}`);
   console.log(`======================================================\n`);
 });
+
+export default server;
