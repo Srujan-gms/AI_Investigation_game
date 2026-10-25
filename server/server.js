@@ -30,38 +30,48 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer(async (req, res) => {
-  const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = urlObj.pathname;
+  try {
+    const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const pathname = urlObj.pathname;
 
-  // Delegate API requests to handleApiRequest
-  if (pathname.startsWith('/api/')) {
-    return handleApiRequest(req, res);
-  }
-
-  // Handle static files (SPA fallback to index.html)
-  let filePath = path.join(ROOT_DIR, pathname === '/' ? 'index.html' : pathname);
-
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      filePath = path.join(ROOT_DIR, 'index.html');
+    // Delegate API routes to handleApiRequest
+    if (
+      pathname.startsWith('/api/') ||
+      pathname.startsWith('/mystery/') ||
+      pathname.startsWith('/session/') ||
+      pathname.startsWith('/auth/')
+    ) {
+      return handleApiRequest(req, res);
     }
 
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    // Handle static files in local environment
+    let filePath = path.join(ROOT_DIR, pathname === '/' ? 'index.html' : pathname);
 
-    fs.readFile(filePath, (readErr, content) => {
-      if (readErr) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        return res.end('500 Internal Server Error: ' + readErr.message);
+    fs.stat(filePath, (err, stats) => {
+      if (err || !stats.isFile()) {
+        filePath = path.join(ROOT_DIR, 'index.html');
       }
 
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Cache-Control': 'no-cache'
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+      fs.readFile(filePath, (readErr, content) => {
+        if (readErr) {
+          // Fallback to API handler if static file read fails
+          return handleApiRequest(req, res);
+        }
+
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Cache-Control': 'no-cache'
+        });
+        res.end(content);
       });
-      res.end(content);
     });
-  });
+  } catch (err) {
+    console.error('[Server Caught Error]', err);
+    return handleApiRequest(req, res);
+  }
 });
 
 server.listen(PORT, () => {
