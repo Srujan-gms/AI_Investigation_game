@@ -547,47 +547,54 @@ export async function createMystery(prompt, genre = 'Noir', difficulty = 'medium
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (apiKey && apiKey.trim().length > 10) {
-    try {
-      console.log(`[AI Service] Calling Gemini 2.0 Flash for prompt: "${prompt.slice(0, 40)}..."`);
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-      
-      const payload = {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: SYSTEM_MYSTERY_PROMPT },
-              { text: getMysteryGenerationPrompt(prompt, genre, difficulty) }
-            ]
+    const candidateModels = ['gemini-2.5-flash', 'gemini-3.8-flash'];
+
+    for (const modelName of candidateModels) {
+      try {
+        console.log(`[AI Service] Calling Gemini API (${modelName}) for prompt: "${prompt.slice(0, 40)}..."`);
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        const payload = {
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: SYSTEM_MYSTERY_PROMPT },
+                { text: getMysteryGenerationPrompt(prompt, genre, difficulty) }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.8,
+            responseMimeType: "application/json"
           }
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          responseMimeType: "application/json"
-        }
-      };
+        };
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawJson) {
-          const parsed = JSON.parse(rawJson);
-          parsed.id = 'case_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
-          parsed.status = 'ready';
-          parsed.createdAt = new Date().toISOString();
-          parsed.updatedAt = new Date().toISOString();
-          console.log(`[AI Service] Gemini successfully generated mystery: "${parsed.title}" with ${parsed.suspects.length} suspects`);
-          return parsed;
+        if (response.ok) {
+          const data = await response.json();
+          const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawJson) {
+            const parsed = JSON.parse(rawJson);
+            parsed.id = 'case_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+            parsed.status = 'ready';
+            parsed.createdAt = new Date().toISOString();
+            parsed.updatedAt = new Date().toISOString();
+            console.log(`[AI Service] Gemini (${modelName}) successfully generated mystery: "${parsed.title}" with ${parsed.suspects.length} suspects`);
+            return parsed;
+          }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          console.warn(`[AI Service] Gemini API (${modelName}) HTTP ${response.status}:`, errData.error?.message || response.statusText);
         }
+      } catch (err) {
+        console.warn(`[AI Service] Gemini API (${modelName}) exception: ${err.message}`);
       }
-    } catch (err) {
-      console.warn(`[AI Service] Gemini API call error: ${err.message}. Using Procedural Engine.`);
     }
   }
 
