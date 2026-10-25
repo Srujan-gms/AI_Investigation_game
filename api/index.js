@@ -1,5 +1,20 @@
-import { handleApiRequest } from '../server/handler.js';
+import handler, {
+  handleWebStandardRequest,
+  GET,
+  POST,
+  PATCH,
+  PUT,
+  DELETE,
+  OPTIONS
+} from '../server/server.js';
 
-export default async function handler(req, res) {
-  return handleApiRequest(req, res);
-}
+export default handler;
+export {
+  handleWebStandardRequest,
+  GET,
+  POST,
+  PATCH,
+  PUT,
+  DELETE,
+  OPTIONS
+};

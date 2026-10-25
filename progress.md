@@ -83,3 +83,5 @@
 - **2026-10-25 (Verification):** Executed full automated end-to-end integration test suite covering all routes, generation, hints, alibis, and verdict evaluation. Verified 100% pass rate.
 - **2026-10-25 (Enhancement):** Expanded procedural suspect generation with genre-specific rosters across Noir, Sci-Fi, Corporate, Fantasy, and Historical genres, dynamic difficulty scaling (3, 4, 5 suspects), and randomized culprit/clue generation.
 - **2026-10-25 (Vercel & Security):** Configured `.gitignore` for secrets isolation, created `vercel.json` routing, unified API handler in `server/handler.js`, and deployed Vercel serverless entrypoint `api/index.js`.
+- **2026-10-25 (Vercel Function Fix):** Fixed `500 Internal Server Error` on `/api/auth/me` on Vercel by converting `server/server.js` export into a universal callable function `export default async function handler(req, res)` with Web Standard `fetch` adapter and HTTP verb exports (`GET`, `POST`, etc.), preventing `server is not a function` error when Vercel invokes the server service entrypoint.
+

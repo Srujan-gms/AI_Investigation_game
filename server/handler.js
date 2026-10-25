@@ -67,13 +67,37 @@ db.sessions.set("case_initial_finch", {
 
 // Helper to parse JSON request body
 function parseBody(req) {
-  if (req.body && typeof req.body === 'object') {
-    return Promise.resolve(req.body);
+  if (req.body) {
+    if (typeof req.body === 'object') return Promise.resolve(req.body);
+    if (typeof req.body === 'string') {
+      try {
+        return Promise.resolve(JSON.parse(req.body));
+      } catch {
+        return Promise.resolve({});
+      }
+    }
   }
+
+  if (!req.on || req.readableEnded) {
+    return Promise.resolve({});
+  }
+
   return new Promise((resolve) => {
     let body = '';
+    let settled = false;
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve({});
+      }
+    }, 2000);
+
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       if (!body) return resolve({});
       try {
         resolve(JSON.parse(body));
@@ -81,19 +105,53 @@ function parseBody(req) {
         resolve({});
       }
     });
+    req.on('error', () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve({});
+    });
   });
 }
 
-// Helper to send JSON responses
+// Helper to send JSON responses safely in any environment (Node, Express, Vercel Serverless)
 function sendJSON(res, statusCode, data) {
-  res.writeHead(statusCode, {
-    'Content-Type': 'application/json',
+  const jsonStr = JSON.stringify(data);
+  const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
     'Access-Control-Allow-Credentials': 'true'
-  });
-  res.end(JSON.stringify(data));
+  };
+
+  if (res.setHeader && typeof res.setHeader === 'function') {
+    for (const [k, v] of Object.entries(headers)) {
+      try { res.setHeader(k, v); } catch {}
+    }
+  }
+
+  if (res.status && typeof res.status === 'function') {
+    res.status(statusCode);
+  } else {
+    res.statusCode = statusCode;
+  }
+
+  if (res.json && typeof res.json === 'function') {
+    return res.json(data);
+  }
+
+  if (res.send && typeof res.send === 'function') {
+    return res.send(jsonStr);
+  }
+
+  if (!res.headersSent && res.writeHead && typeof res.writeHead === 'function') {
+    try {
+      res.writeHead(statusCode, headers);
+    } catch {}
+  }
+
+  return res.end(jsonStr);
 }
 
 /**
@@ -101,23 +159,46 @@ function sendJSON(res, statusCode, data) {
  */
 export async function handleApiRequest(req, res) {
   try {
-    const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const rawUrl = req.url || '/api/auth/me';
+    const host = (req.headers && req.headers.host) || 'localhost';
+    const urlObj = new URL(rawUrl, `http://${host}`);
     let pathname = urlObj.pathname;
-    const method = req.method;
+    const method = req.method || 'GET';
 
     // Normalize path to always begin with /api/
     if (!pathname.startsWith('/api/')) {
       pathname = '/api' + (pathname.startsWith('/') ? pathname : '/' + pathname);
     }
+    // Remove duplicate /api prefixes if any
+    while (pathname.startsWith('/api/api/')) {
+      pathname = pathname.substring(4);
+    }
+    // Remove trailing slash if not root
+    if (pathname.length > 1 && pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1);
+    }
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
-      res.writeHead(204, {
+      const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
         'Access-Control-Max-Age': '86400'
-      });
+      };
+      if (res.setHeader && typeof res.setHeader === 'function') {
+        for (const [k, v] of Object.entries(headers)) {
+          try { res.setHeader(k, v); } catch {}
+        }
+      }
+      if (res.status && typeof res.status === 'function') {
+        res.status(204);
+      } else {
+        res.statusCode = 204;
+      }
+      if (!res.headersSent && res.writeHead && typeof res.writeHead === 'function') {
+        try { res.writeHead(204, headers); } catch {}
+      }
       return res.end();
     }
 
