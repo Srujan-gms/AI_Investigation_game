@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createMystery, generateClueHint } from './services/aiService.js';
 import { sanitizeMysteryForClient } from './utils/responseFilter.js';
+import { connectDB, isDBConnected } from './config/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,9 @@ if (fs.existsSync(envPath)) {
     console.warn('[Env] Notice: .env file read skipped:', e.message);
   }
 }
+
+// Attempt MongoDB connection if MONGO_URI is set
+connectDB().catch(() => {});
 
 // Global In-Memory Data Store
 const db = {

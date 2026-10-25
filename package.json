@@ -1,0 +1,14 @@
+{
+  "name": "ai-mystery-room",
+  "version": "1.0.0",
+  "description": "AI Mystery Room - Interactive Detective Experience",
+  "type": "module",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.9.5"
+  }
+}
