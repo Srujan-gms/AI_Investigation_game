@@ -24,6 +24,72 @@ const suspectPickGrid = document.getElementById('suspect-pick-grid');
 let selectedSuspectId = null;
 let cctvInterval = null;
 
+/**
+ * Procedural SVG Noir Detective Avatar generator (Guaranteed instant offline fallback)
+ */
+export function generateNoirAvatarSvg(name, index = 0) {
+  const cleanName = (name || 'Suspect').trim();
+  const initials = cleanName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(p => p[0].toUpperCase())
+    .slice(0, 2)
+    .join('') || 'SP';
+
+  const palettes = [
+    { bg1: '#0e1017', bg2: '#1b1e2b', accent: '#f59e0b', ring: '#d97706' },
+    { bg1: '#11131a', bg2: '#222533', accent: '#ef4444', ring: '#dc2626' },
+    { bg1: '#0d131a', bg2: '#182433', accent: '#06b6d4', ring: '#0891b2' },
+    { bg1: '#141117', bg2: '#281e2b', accent: '#ec4899', ring: '#db2777' },
+    { bg1: '#121415', bg2: '#212628', accent: '#10b981', ring: '#059669' }
+  ];
+  const p = palettes[Math.abs(index) % palettes.length];
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+    <defs>
+      <linearGradient id="g${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${p.bg1}" />
+        <stop offset="100%" stop-color="${p.bg2}" />
+      </linearGradient>
+      <pattern id="grid${index}" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1" />
+      </pattern>
+    </defs>
+    <rect width="400" height="400" fill="url(#g${index})" />
+    <rect width="400" height="400" fill="url(#grid${index})" />
+    <!-- Outer Reticle Rings -->
+    <circle cx="200" cy="155" r="75" fill="none" stroke="${p.accent}" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
+    <circle cx="200" cy="155" r="62" fill="rgba(255,255,255,0.05)" stroke="${p.ring}" stroke-width="2" />
+    <!-- Detective Fedora & Collar Silhouette -->
+    <path d="M140 135 C150 115, 175 105, 200 105 C225 105, 250 115, 260 135 C240 130, 220 128, 200 128 C180 128, 160 130, 140 135 Z" fill="${p.accent}" opacity="0.75" />
+    <path d="M125 140 C160 135, 240 135, 275 140 C285 142, 275 146, 255 148 C225 151, 175 151, 145 148 C125 146, 115 142, 125 140 Z" fill="${p.ring}" />
+    <!-- Face Contour -->
+    <path d="M170 148 C170 130, 230 130, 230 148 C230 180, 215 195, 200 195 C185 195, 170 180, 170 148 Z" fill="rgba(255,255,255,0.12)" />
+    <!-- Trench Coat Shoulders -->
+    <path d="M110 300 L140 220 L175 228 L200 240 L225 228 L260 220 L290 300 Z" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" />
+    <!-- Badge Disc & Initials -->
+    <circle cx="200" cy="158" r="38" fill="rgba(9,10,15,0.92)" stroke="${p.accent}" stroke-width="2" />
+    <text x="200" y="166" font-family="'Inter', sans-serif" font-size="24" font-weight="800" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="2">${initials}</text>
+    <!-- Crosshairs -->
+    <circle cx="200" cy="200" r="160" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+    <line x1="200" y1="20" x2="200" y2="380" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="6 6" />
+    <line x1="20" y1="200" x2="380" y2="200" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="6 6" />
+    <!-- Tape / Evidence Label -->
+    <rect x="40" y="325" width="320" height="38" rx="4" fill="rgba(0,0,0,0.85)" stroke="${p.accent}" stroke-width="1" />
+    <text x="200" y="349" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="${p.accent}" text-anchor="middle" letter-spacing="2">DOSSIER // SUSPECT ARCHIVE</text>
+  </svg>`;
+
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+// Global safe error handler for broken or blocked external portrait URLs
+window.handleSuspectImgError = function(imgEl, idx) {
+  if (!imgEl) return;
+  imgEl.onerror = null;
+  const name = imgEl.getAttribute('data-name') || imgEl.alt || 'Suspect';
+  imgEl.src = generateNoirAvatarSvg(name, idx || 0);
+};
+
 // Initialize Global UI Components
 function initApp() {
   initAtmosphere();
@@ -443,7 +509,7 @@ function renderInvestigationRoom(state) {
       </div>
 
       <div class="suspects-grid" id="suspects-grid">
-        ${mystery.suspects.map(suspect => renderSuspectCard(suspect, state)).join('')}
+        ${mystery.suspects.map((suspect, idx) => renderSuspectCard(suspect, state, idx)).join('')}
       </div>
 
       <!-- Evidence Locker -->
@@ -538,25 +604,40 @@ function renderInvestigationRoom(state) {
   wireEvidenceInteractions();
 }
 
-function renderSuspectCard(suspect, state) {
+function renderSuspectCard(suspect, state, idx = 0) {
   const isPinned = state.pinnedEvidence.has(suspect.id);
+  const fallbackSvg = generateNoirAvatarSvg(suspect.name, idx);
+  const photoSrc = (suspect.photoUrl && typeof suspect.photoUrl === 'string' && suspect.photoUrl.startsWith('http'))
+    ? suspect.photoUrl
+    : fallbackSvg;
+  const safeName = (suspect.name || 'Suspect').replace(/"/g, '&quot;');
+  const suspectNum = idx + 1;
+
   return `
     <div class="suspect-card animate-slide-up" id="card-${suspect.id}">
       <div class="suspect-photo-wrap">
-        <img src="${suspect.photoUrl}" alt="${suspect.name}" class="suspect-photo" />
-        <span class="suspect-tape-badge">SUSPECT #${suspect.id.split('-')[1] || '1'}</span>
+        <img 
+          src="${photoSrc}" 
+          alt="${safeName}" 
+          data-name="${safeName}"
+          class="suspect-photo" 
+          referrerpolicy="no-referrer"
+          loading="lazy"
+          onerror="window.handleSuspectImgError(this, ${idx})"
+        />
+        <span class="suspect-tape-badge">SUSPECT #${suspectNum}</span>
         <button class="suspect-pin-btn ${isPinned ? 'pinned' : ''}" data-id="${suspect.id}" title="Pin clue">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
         </button>
       </div>
       <div class="suspect-body">
-        <h3 class="suspect-name">${suspect.name} (${suspect.age})</h3>
+        <h3 class="suspect-name">${suspect.name} (${suspect.age || 'Unknown'})</h3>
         <div class="suspect-role">${suspect.role}</div>
         <div class="suspect-alibi-box">
-          <strong style="color: #fff;">Stated Alibi:</strong> ${suspect.alibi}
+          <strong style="color: #fff;">Stated Alibi:</strong> ${suspect.alibi || 'No sworn alibi filed.'}
         </div>
         <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: 1rem; line-height: 1.5;">
-          ${suspect.backstory}
+          ${suspect.backstory || ''}
         </p>
         <div class="suspect-actions">
           <button class="btn btn-secondary btn-sm suspect-accuse-quick-btn" data-id="${suspect.id}" style="width: 100%;">
@@ -594,9 +675,12 @@ function renderEvidenceItem(item) {
       </div>
     `;
   } else if (item.type === 'image') {
+    const mediaSrc = (item.mediaUrl && typeof item.mediaUrl === 'string' && item.mediaUrl.startsWith('http'))
+      ? item.mediaUrl
+      : "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80";
     contentHtml = `
-      <div class="forensic-photo-box" onclick="window.openLightbox('${item.mediaUrl}', '${item.title}', '${item.exif ? item.exif.notes || '' : ''}')">
-        <img src="${item.mediaUrl}" alt="${item.title}" class="forensic-photo" />
+      <div class="forensic-photo-box" onclick="window.openLightbox('${mediaSrc}', '${(item.title || 'Evidence').replace(/'/g, "\\'")}', '${item.exif ? (item.exif.notes || '').replace(/'/g, "\\'") : ''}')">
+        <img src="${mediaSrc}" alt="${item.title}" class="forensic-photo" referrerpolicy="no-referrer" loading="lazy" />
       </div>
       ${item.exif ? `
         <div class="exif-tag-row">
@@ -607,9 +691,12 @@ function renderEvidenceItem(item) {
       ` : ''}
     `;
   } else if (item.type === 'video') {
+    const videoThumb = (item.mediaUrl && typeof item.mediaUrl === 'string' && item.mediaUrl.startsWith('http'))
+      ? item.mediaUrl
+      : "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80";
     contentHtml = `
       <div class="cctv-monitor-box">
-        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80" class="cctv-screen" alt="CCTV feed" />
+        <img src="${videoThumb}" class="cctv-screen" alt="CCTV feed" referrerpolicy="no-referrer" loading="lazy" />
         <div class="cctv-overlay-scanline"></div>
         <div class="cctv-live-tag">
           <div class="cctv-rec-dot"></div>
@@ -692,13 +779,25 @@ function startCctvClock() {
 function openAccusationModal(suspects, preselectId = null) {
   selectedSuspectId = preselectId || suspects[0].id;
 
-  suspectPickGrid.innerHTML = suspects.map(s => `
-    <div class="suspect-pick-card ${s.id === selectedSuspectId ? 'selected' : ''}" data-id="${s.id}">
-      <img src="${s.photoUrl}" alt="${s.name}" class="suspect-pick-avatar" />
-      <div class="suspect-pick-name">${s.name}</div>
-      <div style="font-size: 0.72rem; color: var(--color-accent-red); margin-top: 0.2rem;">${s.role.split('&')[0]}</div>
-    </div>
-  `).join('');
+  suspectPickGrid.innerHTML = suspects.map((s, idx) => {
+    const fallbackSvg = generateNoirAvatarSvg(s.name, idx);
+    const photoSrc = (s.photoUrl && typeof s.photoUrl === 'string' && s.photoUrl.startsWith('http')) ? s.photoUrl : fallbackSvg;
+    const safeName = (s.name || 'Suspect').replace(/"/g, '&quot;');
+    return `
+      <div class="suspect-pick-card ${s.id === selectedSuspectId ? 'selected' : ''}" data-id="${s.id}">
+        <img 
+          src="${photoSrc}" 
+          alt="${safeName}" 
+          data-name="${safeName}"
+          class="suspect-pick-avatar" 
+          referrerpolicy="no-referrer"
+          onerror="window.handleSuspectImgError(this, ${idx})"
+        />
+        <div class="suspect-pick-name">${s.name}</div>
+        <div style="font-size: 0.72rem; color: var(--color-accent-red); margin-top: 0.2rem;">${(s.role || '').split('&')[0]}</div>
+      </div>
+    `;
+  }).join('');
 
   document.querySelectorAll('.suspect-pick-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -741,6 +840,11 @@ function renderVerdictResult(state) {
     return;
   }
 
+  const culpritPhotoSrc = (res.culpritPhoto && typeof res.culpritPhoto === 'string' && res.culpritPhoto.startsWith('http'))
+    ? res.culpritPhoto
+    : generateNoirAvatarSvg(res.culpritName || 'Perpetrator', 0);
+  const safeCulpritName = (res.culpritName || 'Perpetrator').replace(/"/g, '&quot;');
+
   appContainer.innerHTML = `
     <div class="page-view animate-fade-in">
       <div class="verdict-reveal-box">
@@ -755,7 +859,14 @@ function renderVerdictResult(state) {
         </div>
 
         <div class="culprit-unmasked-card">
-          <img src="${res.culpritPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}" alt="${res.culpritName}" class="culprit-unmasked-photo" />
+          <img 
+            src="${culpritPhotoSrc}" 
+            alt="${safeCulpritName}" 
+            data-name="${safeCulpritName}"
+            class="culprit-unmasked-photo" 
+            referrerpolicy="no-referrer"
+            onerror="window.handleSuspectImgError(this, 0)"
+          />
           <div>
             <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent-amber); font-weight: 700;">
               IDENTIFIED PERPETRATOR

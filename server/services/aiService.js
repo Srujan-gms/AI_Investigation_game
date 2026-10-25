@@ -540,6 +540,117 @@ As lead investigator, you must analyze the evidence locker, examine the WhatsApp
 }
 
 /**
+ * Portrait and Scene Evidence image catalogs by genre
+ */
+export const PORTRAIT_CATALOG = {
+  Noir: [
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&auto=format&fit=crop&q=80"
+  ],
+  'Sci-Fi': [
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80"
+  ],
+  Corporate: [
+    "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"
+  ],
+  Fantasy: [
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80"
+  ],
+  Historical: [
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=500&auto=format&fit=crop&q=80"
+  ]
+};
+
+export const SCENE_CATALOG = {
+  Noir: [
+    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80"
+  ],
+  'Sci-Fi': [
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80"
+  ],
+  Corporate: [
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80"
+  ],
+  Fantasy: [
+    "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80"
+  ],
+  Historical: [
+    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80"
+  ]
+};
+
+/**
+ * Ensures all suspects have valid high-resolution portraits and all image/video evidence has media URLs
+ */
+export function enrichMysteryAssets(mystery, genre = 'Noir') {
+  if (!mystery) return mystery;
+  const gKey = PORTRAIT_CATALOG[genre] ? genre : 'Noir';
+  const portraits = PORTRAIT_CATALOG[gKey];
+  const scenes = SCENE_CATALOG[gKey] || SCENE_CATALOG.Noir;
+
+  if (Array.isArray(mystery.suspects)) {
+    mystery.suspects.forEach((suspect, idx) => {
+      if (!suspect.photoUrl || typeof suspect.photoUrl !== 'string' || !suspect.photoUrl.startsWith('http')) {
+        suspect.photoUrl = portraits[idx % portraits.length];
+      }
+    });
+  }
+
+  if (Array.isArray(mystery.evidence)) {
+    let imgIdx = 0;
+    mystery.evidence.forEach((item) => {
+      if (item.type === 'image') {
+        if (!item.mediaUrl || typeof item.mediaUrl !== 'string' || !item.mediaUrl.startsWith('http')) {
+          item.mediaUrl = scenes[imgIdx % scenes.length];
+          imgIdx++;
+        }
+      } else if (item.type === 'video') {
+        if (!item.mediaUrl || typeof item.mediaUrl !== 'string' || !item.mediaUrl.startsWith('http')) {
+          item.mediaUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80";
+        }
+      }
+    });
+  }
+
+  return mystery;
+}
+
+/**
  * Main AI Mystery Generation orchestrator
  * Attempts Google Gemini API first; falls back gracefully to Procedural Engine
  */
@@ -585,6 +696,10 @@ export async function createMystery(prompt, genre = 'Noir', difficulty = 'medium
             parsed.status = 'ready';
             parsed.createdAt = new Date().toISOString();
             parsed.updatedAt = new Date().toISOString();
+
+            // Enrich all suspects with guaranteed high-resolution portraits and evidence photos
+            enrichMysteryAssets(parsed, genre);
+
             console.log(`[AI Service] Gemini (${modelName}) successfully generated mystery: "${parsed.title}" with ${parsed.suspects.length} suspects`);
             return parsed;
           }
@@ -600,7 +715,8 @@ export async function createMystery(prompt, genre = 'Noir', difficulty = 'medium
 
   // Multi-genre procedural generation fallback
   console.log(`[AI Service] Generating procedural case for genre: ${genre}, difficulty: ${difficulty}`);
-  return generateProceduralMystery(prompt, genre, difficulty);
+  const proceduralCase = generateProceduralMystery(prompt, genre, difficulty);
+  return enrichMysteryAssets(proceduralCase, genre);
 }
 
 /**

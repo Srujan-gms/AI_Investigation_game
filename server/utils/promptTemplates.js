@@ -43,6 +43,7 @@ Output Schema:
       "role": "Role / Relationship to victim",
       "age": 35,
       "photoPrompt": "Visual description for portrait",
+      "photoUrl": "High-quality portrait photo URL or leave null for server auto-assignment",
       "alibi": "Stated whereabouts and witness claims",
       "backstory": "Background and secret grievances",
       "isCulprit": false

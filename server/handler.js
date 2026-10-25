@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createMystery, generateProceduralMystery, generateClueHint } from './services/aiService.js';
+import { createMystery, generateProceduralMystery, generateClueHint, enrichMysteryAssets } from './services/aiService.js';
 import { sanitizeMysteryForClient } from './utils/responseFilter.js';
 import { connectDB, isDBConnected } from './config/db.js';
 
@@ -55,7 +55,9 @@ const seedMystery = generateProceduralMystery(
   "medium"
 );
 seedMystery.id = "case_initial_finch";
+enrichMysteryAssets(seedMystery, "Noir");
 db.mysteries.set("case_initial_finch", seedMystery);
+
 db.sessions.set("case_initial_finch", {
   id: "sess_initial_finch",
   mysteryId: "case_initial_finch",
