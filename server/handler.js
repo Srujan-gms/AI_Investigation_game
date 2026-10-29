@@ -206,9 +206,51 @@ export async function handleApiRequest(req, res) {
 
     // GET /api/auth/me
     if (pathname === '/api/auth/me' && method === 'GET') {
-      const defaultUser = db.users.get('user_detective_1');
+      const queryUid = urlObj.searchParams.get('uid');
+      const authHeader = (req.headers && req.headers.authorization) || '';
+      const bearerUid = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+      const targetUid = queryUid || bearerUid;
+
+      let user = null;
+      if (targetUid && db.users.has(targetUid)) {
+        user = db.users.get(targetUid);
+      } else {
+        user = db.users.get('user_detective_1');
+      }
+
       return sendJSON(res, 200, {
-        user: defaultUser,
+        user,
+        isAuthenticated: true
+      });
+    }
+
+    // POST /api/auth/sync — Sync client Google/Firebase auth with backend
+    if (pathname === '/api/auth/sync' && method === 'POST') {
+      const body = await parseBody(req);
+      const uid = body.uid || 'user_' + Date.now();
+      let user = db.users.get(uid);
+      if (!user) {
+        user = {
+          id: uid,
+          username: body.displayName || body.username || (body.email ? body.email.split('@')[0] : 'Detective Vance'),
+          email: body.email || 'detective@agency.noir',
+          avatar: body.photoURL || body.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+          solvedCases: [],
+          hintTokens: 3,
+          authProvider: body.authProvider || 'google',
+          syncedAt: new Date().toISOString()
+        };
+      } else {
+        if (body.displayName) user.username = body.displayName;
+        if (body.email) user.email = body.email;
+        if (body.photoURL) user.avatar = body.photoURL;
+        user.authProvider = body.authProvider || user.authProvider || 'google';
+        user.syncedAt = new Date().toISOString();
+      }
+      db.users.set(uid, user);
+      return sendJSON(res, 200, {
+        message: 'User session synchronized',
+        user,
         isAuthenticated: true
       });
     }

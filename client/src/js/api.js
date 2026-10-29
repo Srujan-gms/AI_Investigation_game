@@ -26,7 +26,12 @@ export async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  getMe: () => request('/api/auth/me'),
+  getMe: (uid) => request(uid ? `/api/auth/me?uid=${encodeURIComponent(uid)}` : '/api/auth/me'),
+  syncUser: (userData) =>
+    request('/api/auth/sync', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
 
   generateMystery: (prompt, genre, difficulty) =>

@@ -3,6 +3,8 @@ import { api } from './api.js';
 import { initAtmosphere } from './components/atmosphere.js';
 import { initLightbox } from './components/lightbox.js';
 import { fireConfetti } from './components/confetti.js';
+import { setupAuth, signInWithGoogle, signOutUser, isLocalhost } from './auth.js';
+import { mountCctvPlayer } from './components/cctvPlayer.js';
 
 // Dom Elements
 const appContainer = document.getElementById('app');
@@ -22,7 +24,6 @@ const accusationConfirmBtn = document.getElementById('accusation-confirm-btn');
 const suspectPickGrid = document.getElementById('suspect-pick-grid');
 
 let selectedSuspectId = null;
-let cctvInterval = null;
 
 /**
  * Procedural SVG Noir Detective Avatar generator (Guaranteed instant offline fallback)
@@ -95,13 +96,21 @@ function initApp() {
   initAtmosphere();
   initLightbox();
 
-  // Load User Profile
-  api.getMe().then(res => {
-    if (res && res.user) {
-      appState.setState({ user: res.user });
+  // Initialize Authentication & User Profile
+  // On Localhost: Bypasses auth automatically as requested
+  // On Vercel: Uses Google Firebase Auth with Guest Detective fallback
+  setupAuth((user) => {
+    if (user) {
+      appState.setState({ user });
       updateNav();
     }
-  }).catch(() => {});
+  });
+
+  // Wire User Badge click to open Account Management
+  const navUserBadge = document.getElementById('nav-user-badge');
+  if (navUserBadge) {
+    navUserBadge.addEventListener('click', () => navigateTo('account'));
+  }
 
   // Wire Notes Drawer
   if (notesTextarea) {
@@ -158,6 +167,17 @@ function updateNav() {
   if (userBadge && state.user) {
     userBadge.textContent = state.user.username;
   }
+  const userAvatar = document.getElementById('nav-user-avatar');
+  if (userAvatar && state.user && state.user.avatar) {
+    userAvatar.src = state.user.avatar;
+  }
+  const statusDot = document.getElementById('nav-user-status-dot');
+  if (statusDot && state.user) {
+    statusDot.className = 'user-badge-status-dot ' + (state.user.isGuest ? 'guest' : 'localhost');
+    statusDot.title = state.user.isLocalhost
+      ? 'Localhost Clearance: Active (No auth required)'
+      : (state.user.authProvider === 'google' ? 'Google Authenticated' : 'Guest Mode (Click to Sign In)');
+  }
 }
 
 // Router
@@ -187,6 +207,9 @@ function renderCurrentPage(state) {
       break;
     case 'history':
       renderHistoryPage(state);
+      break;
+    case 'account':
+      renderAccountPage(state);
       break;
     default:
       renderLandingPage(state);
@@ -461,8 +484,6 @@ function renderInvestigationRoom(state) {
     return;
   }
 
-  if (cctvInterval) clearInterval(cctvInterval);
-
   appContainer.innerHTML = `
     <div class="page-view animate-fade-in">
       <!-- Case Header -->
@@ -561,9 +582,6 @@ function renderInvestigationRoom(state) {
       </div>
     </div>
   `;
-
-  // Start CCTV running clock
-  startCctvClock();
 
   // Wire Tab Buttons
   document.querySelectorAll('#evidence-tabs .evidence-tab-btn').forEach(btn => {
@@ -691,22 +709,8 @@ function renderEvidenceItem(item) {
       ` : ''}
     `;
   } else if (item.type === 'video') {
-    const videoThumb = (item.mediaUrl && typeof item.mediaUrl === 'string' && item.mediaUrl.startsWith('http'))
-      ? item.mediaUrl
-      : "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80";
     contentHtml = `
-      <div class="cctv-monitor-box">
-        <img src="${videoThumb}" class="cctv-screen" alt="CCTV feed" referrerpolicy="no-referrer" loading="lazy" />
-        <div class="cctv-overlay-scanline"></div>
-        <div class="cctv-live-tag">
-          <div class="cctv-rec-dot"></div>
-          ${item.cameraLabel || 'CAM 04 - CORRIDOR'}
-        </div>
-        <div class="cctv-timecode" id="cctv-running-time">10:18:44 PM</div>
-      </div>
-      <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-top: 0.75rem; line-height: 1.5;">
-        ${item.footageDescription || 'Security log recorded anomalous frame static.'}
-      </p>
+      <div class="cctv-mount-slot" id="cctv-slot-${item.id}"></div>
     `;
   } else if (item.type === 'document') {
     contentHtml = `
@@ -735,6 +739,16 @@ function renderEvidenceItem(item) {
 }
 
 function wireEvidenceInteractions() {
+  // Mount interactive forensic CCTV players
+  const state = appState.getState();
+  document.querySelectorAll('.cctv-mount-slot').forEach(slot => {
+    const evId = slot.id.replace('cctv-slot-', '');
+    const evItem = (state.mystery && state.mystery.evidence)
+      ? state.mystery.evidence.find(e => e.id === evId)
+      : null;
+    mountCctvPlayer(slot, evItem || {}, state.mystery);
+  });
+
   // Pin Clues
   document.querySelectorAll('.suspect-pin-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -761,16 +775,6 @@ function wireEvidenceInteractions() {
       }
     });
   });
-}
-
-function startCctvClock() {
-  cctvInterval = setInterval(() => {
-    const el = document.getElementById('cctv-running-time');
-    if (!el) return;
-    const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0] + '.' + Math.floor(now.getMilliseconds() / 100);
-    el.textContent = 'REC ' + timeStr;
-  }, 200);
 }
 
 /* =========================================================
@@ -962,6 +966,190 @@ async function renderHistoryPage() {
   } catch (err) {
     document.getElementById('history-list-grid').innerHTML = `<div style="color: var(--color-error);">Failed to load history: ${err.message}</div>`;
   }
+}
+
+/* =========================================================
+   8. ACCOUNT MANAGEMENT & DETECTIVE CREDENTIALS PAGE
+========================================================= */
+function renderAccountPage(state) {
+  const user = state.user || {};
+  const isLocal = isLocalhost();
+  const isGoogle = user.authProvider === 'google';
+
+  appContainer.innerHTML = `
+    <div class="page-view animate-fade-in">
+      <div class="account-page-container">
+        <!-- Top Navigation Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <button class="btn btn-secondary" id="account-back-btn" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+            ← Return to ${state.mystery ? 'Active Case' : 'Dashboard'}
+          </button>
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-text-muted);">
+            BUREAU DOSSIER // DEPT ARCHIVES
+          </span>
+        </div>
+
+        <!-- Official Detective Identification Card -->
+        <div class="account-dossier-card animate-slide-up">
+          <div class="account-header-row">
+            <div class="account-avatar-container">
+              <img 
+                src="${user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'}" 
+                alt="Avatar" 
+                class="account-avatar-img"
+                onerror="window.handleSuspectImgError(this, 0)" 
+              />
+              <div class="account-avatar-badge">${user.badgeId || 'DET-LOCAL'}</div>
+            </div>
+
+            <div class="account-meta-col">
+              <h1 class="account-detective-title">${user.username || 'Detective Vance'}</h1>
+              <div class="account-email-tag">
+                ${user.email || 'detective.vance@agency.noir'}
+              </div>
+              <div class="account-rank-pill">
+                ⭐ ${user.rank || 'Senior Homicide Investigator'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Environment & Authentication Status Banner -->
+          ${isLocal ? `
+            <div class="env-status-banner localhost">
+              <div>
+                <strong>🟢 Localhost Mode:</strong> Authentication is completely bypassed for local development. Full investigative tools, mystery generator, and archives are unlocked.
+              </div>
+            </div>
+          ` : (isGoogle ? `
+            <div class="env-status-banner verified">
+              <div>
+                <strong>🔵 Google Account Verified:</strong> Signed in as <code>${user.email}</code>. Your solved mystery records and detective scores are preserved.
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-account-logout" style="padding: 0.35rem 0.85rem;">Sign Out</button>
+            </div>
+          ` : `
+            <div class="env-status-banner guest">
+              <div>
+                <strong>🟡 Guest Investigator:</strong> You are playing in guest session mode on Vercel. Sign in with Google to permanently track your solved cases across devices.
+              </div>
+              <button class="btn-google-auth" id="btn-account-google-login">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                Sign In with Google
+              </button>
+            </div>
+          `)}
+
+          <!-- Google Actions Strip -->
+          <div class="account-auth-actions">
+            ${(!isGoogle && !isLocal) ? `
+              <button class="btn-google-auth" id="btn-dossier-google-login">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                Sign In with Google
+              </button>
+            ` : ''}
+
+            ${isGoogle ? `
+              <button class="btn btn-secondary" id="btn-dossier-signout" style="padding: 0.6rem 1.25rem;">
+                Sign Out of Detective Account
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Career Statistics -->
+        <div class="account-stats-grid">
+          <div class="account-stat-box">
+            <div class="stat-number" style="color: var(--color-accent-amber);">${(user.solvedCases || []).length}</div>
+            <div class="stat-label-text">CASES SOLVED</div>
+          </div>
+          <div class="account-stat-box">
+            <div class="stat-number" style="color: #22c55e;">${(user.solvedCases || []).length > 0 ? '100%' : '0%'}</div>
+            <div class="stat-label-text">CONVICTION ACCURACY</div>
+          </div>
+          <div class="account-stat-box">
+            <div class="stat-number" style="color: #3b82f6;">${(user.solvedCases || []).length * 90}</div>
+            <div class="stat-label-text">MERIT SCORE</div>
+          </div>
+          <div class="account-stat-box">
+            <div class="stat-number" style="color: var(--color-accent-red);">${state.hintsRemaining}</div>
+            <div class="stat-label-text">HINT TOKENS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  wireAccountEvents();
+}
+
+function wireAccountEvents() {
+  const backBtn = document.getElementById('account-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const state = appState.getState();
+      navigateTo(state.mystery ? 'room' : 'landing');
+    });
+  }
+
+  // Google Sign-In buttons
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await signInWithGoogle();
+      if (res && res.user) {
+        const user = {
+          uid: res.user.uid,
+          username: res.user.displayName || res.user.email.split('@')[0],
+          email: res.user.email,
+          avatar: res.user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+          badgeId: 'DET-' + res.user.uid.slice(0, 6).toUpperCase(),
+          rank: 'Verified Inspector',
+          isLocalhost: false,
+          isGuest: false,
+          authProvider: 'google',
+          solvedCases: []
+        };
+        appState.setState({ user });
+        updateNav();
+        renderAccountPage(appState.getState());
+      } else if (res && res.message) {
+        alert(res.message);
+      }
+    } catch (err) {
+      alert('Google Sign-In failed: ' + err.message);
+    }
+  };
+
+  const loginBtn1 = document.getElementById('btn-account-google-login');
+  if (loginBtn1) loginBtn1.addEventListener('click', handleGoogleLogin);
+
+  const loginBtn2 = document.getElementById('btn-dossier-google-login');
+  if (loginBtn2) loginBtn2.addEventListener('click', handleGoogleLogin);
+
+  // Sign out buttons
+  const handleSignOut = async () => {
+    await signOutUser();
+    const guestUser = {
+      uid: 'guest_detective_' + Math.random().toString(36).substring(2, 8),
+      username: 'Guest Detective',
+      email: 'guest@mysteryroom.app',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      badgeId: 'DET-GUEST',
+      rank: 'Guest Investigator',
+      isLocalhost: false,
+      isGuest: true,
+      authProvider: 'guest',
+      solvedCases: []
+    };
+    appState.setState({ user: guestUser });
+    updateNav();
+    renderAccountPage(appState.getState());
+  };
+
+  const logoutBtn1 = document.getElementById('btn-account-logout');
+  if (logoutBtn1) logoutBtn1.addEventListener('click', handleSignOut);
+
+  const logoutBtn2 = document.getElementById('btn-dossier-signout');
+  if (logoutBtn2) logoutBtn2.addEventListener('click', handleSignOut);
 }
 
 // Start Application on DOM Ready

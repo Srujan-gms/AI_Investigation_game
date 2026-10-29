@@ -1456,6 +1456,647 @@ h1, h2, h3, h4 {
   text-align: center;
 }
 
+/* User Badge in Navbar - Clickable for Account Management */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.user-badge:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-accent-amber);
+  transform: translateY(-1px);
+}
+
+.user-badge-status-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 24px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid #0d0d0f;
+  background: #10b981;
+}
+
+.user-badge-status-dot.guest {
+  background: #f59e0b;
+}
+
+/* =========================================================
+   CCTV FORENSIC SURVEILLANCE SYSTEM STYLES
+========================================================= */
+.cctv-forensic-system {
+  background: #090a0f;
+  border: 1px solid #232733;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.cctv-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  background: #11131a;
+  border-bottom: 1px solid #1f2330;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cctv-brand-col {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cctv-rec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.cctv-rec-blink {
+  animation: typingBounce 1s infinite;
+  display: inline-block;
+}
+
+.cctv-sys-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.cctv-cam-selector {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.cctv-cam-btn {
+  background: #161a24;
+  border: 1px solid #283042;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cctv-cam-btn:hover {
+  background: #202636;
+  color: #f1f5f9;
+}
+
+.cctv-cam-btn.active {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: #f59e0b;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.cctv-vision-modes {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.cctv-mode-btn {
+  background: #161a24;
+  border: 1px solid #283042;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cctv-mode-btn:hover {
+  color: #fff;
+}
+
+.cctv-mode-btn.active {
+  background: #334155;
+  border-color: #64748b;
+  color: #fff;
+}
+
+.cctv-mode-btn[data-mode="ir"].active {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: #22c55e;
+  color: #4ade80;
+}
+
+.cctv-mode-btn[data-mode="thermal"].active {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: #ec4899;
+  color: #f472b6;
+}
+
+/* Screen Frame */
+.cctv-screen-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.cctv-display-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.cctv-crt-scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.35) 0px,
+    rgba(0, 0, 0, 0.35) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.cctv-crt-glass-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+  transition: background 0.1s ease;
+}
+
+.cctv-hud-top-left {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.hud-mono-bold {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.05em;
+}
+
+.hud-mono-sub {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.cctv-hud-top-right {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  text-align: right;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.hud-fps-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+#cctv-hud-timestamp {
+  color: #22c55e;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+/* Motion Detection Target Reticle */
+.cctv-target-reticle {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: left 0.1s linear, top 0.1s linear;
+}
+
+.reticle-box {
+  width: 110px;
+  height: 150px;
+  border: 1px dashed rgba(239, 68, 68, 0.8);
+  position: relative;
+  background: rgba(239, 68, 68, 0.08);
+  animation: alertPulse 1.2s infinite;
+}
+
+.reticle-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: #ef4444;
+}
+
+.reticle-corner.tl { top: -2px; left: -2px; border-top: 2px solid #ef4444; border-left: 2px solid #ef4444; }
+.reticle-corner.tr { top: -2px; right: -2px; border-top: 2px solid #ef4444; border-right: 2px solid #ef4444; }
+.reticle-corner.bl { bottom: -2px; left: -2px; border-bottom: 2px solid #ef4444; border-left: 2px solid #ef4444; }
+.reticle-corner.br { bottom: -2px; right: -2px; border-bottom: 2px solid #ef4444; border-right: 2px solid #ef4444; }
+
+.reticle-data {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 0.25rem 0.45rem;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+.reticle-alert {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.reticle-info, .reticle-conf {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: #cbd5e1;
+}
+
+/* Controls Strip */
+.cctv-controls-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  background: #0f1118;
+  border-top: 1px solid #1f2330;
+  flex-wrap: wrap;
+}
+
+.cctv-playback-btns {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.cctv-ctrl-btn {
+  background: #1a1e2b;
+  border: 1px solid #293144;
+  color: #f1f5f9;
+  padding: 0.4rem 0.65rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.cctv-ctrl-btn:hover {
+  background: #252b3d;
+  border-color: #3b82f6;
+}
+
+.cctv-timeline-wrapper {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cctv-seek-bar {
+  width: 100%;
+  accent-color: #f59e0b;
+  cursor: pointer;
+  height: 6px;
+  border-radius: 3px;
+  background: #1e2433;
+}
+
+.cctv-timeline-markers {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.cctv-anomaly-pill {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cctv-anomaly-pill:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #fff;
+}
+
+.cctv-action-btns {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.cctv-ctrl-btn.speed-btn {
+  min-width: 44px;
+  color: #f59e0b;
+}
+
+.cctv-ctrl-btn.capture-btn {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  gap: 0.35rem;
+}
+
+.cctv-ctrl-btn.capture-btn:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #10b981;
+  color: #fff;
+}
+
+/* Intel Card */
+.cctv-intel-card {
+  padding: 0.75rem 0.95rem;
+  background: #0c0d13;
+  border-top: 1px solid #1a1c24;
+}
+
+.intel-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e67e22;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+
+.intel-text {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.intel-subtext {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed #202430;
+}
+
+/* =========================================================
+   ACCOUNT MANAGEMENT & AUTH SCREEN STYLES
+========================================================= */
+.account-page-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.account-dossier-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.account-dossier-card::before {
+  content: "OFFICIAL POLICE DOSSIER // DEPT OF INVESTIGATION";
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.1em;
+}
+
+.account-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.account-avatar-container {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.account-avatar-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-accent-amber);
+  box-shadow: 0 0 20px rgba(230, 126, 34, 0.25);
+}
+
+.account-avatar-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #11131a;
+  border: 1px solid var(--color-border);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--color-accent-amber);
+}
+
+.account-meta-col {
+  flex: 1;
+  min-width: 250px;
+}
+
+.account-detective-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.account-email-tag {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 0.3rem;
+}
+
+.account-rank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(230, 126, 34, 0.12);
+  border: 1px solid rgba(230, 126, 34, 0.35);
+  color: #fbbf24;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 0.6rem;
+}
+
+/* Environment Status Pill */
+.env-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.env-status-banner.localhost {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.env-status-banner.verified {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.env-status-banner.guest {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+/* Career Stats Grid */
+.account-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.account-stat-box {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  color: #fff;
+  line-height: 1;
+}
+
+.stat-label-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 0.4rem;
+  letter-spacing: 0.05em;
+}
+
+/* Google Sign-In & Auth Actions */
+.account-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+.btn-google-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.btn-google-auth:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .app-navbar {

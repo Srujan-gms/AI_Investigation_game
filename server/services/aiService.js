@@ -640,8 +640,11 @@ export function enrichMysteryAssets(mystery, genre = 'Noir') {
           imgIdx++;
         }
       } else if (item.type === 'video') {
-        if (!item.mediaUrl || typeof item.mediaUrl !== 'string' || !item.mediaUrl.startsWith('http')) {
-          item.mediaUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80";
+        if (!item.footageDescription) {
+          item.footageDescription = "Surveillance recording confirms an unidentified subject in coat and gloves traversing the sector at 10:18 PM, directly challenging witness alibi statements.";
+        }
+        if (!item.cameraLabel) {
+          item.cameraLabel = "CAM 01 // MAIN NORTH PASSAGE";
         }
       }
     });
